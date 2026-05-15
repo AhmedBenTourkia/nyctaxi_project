@@ -1,24 +1,27 @@
 # Databricks notebook source
+import sys
+import os
+#Reach project root
+project_root = os.path.abspath(os.getcwd(), "../..")
+
+if project_root not in sys.path:
+    sys.path.append(project_root)
+
 import urllib.request
 import shutil
-import os
+from modules.data_loader.file_downloader import download_file
 
 # COMMAND ----------
 
 try:
     url_target = "https://d37ci6vzurychx.cloudfront.net/misc/taxi_zone_lookup.csv"
 
-    response = urllib.request.urlopen(url_target)
+    local_path = f"/Volumes/nyctaxi/00_landing/datasources/lookup"
 
     dir_path = "/Volumes/nyctaxi/00_landing/datasources/lookup"
 
-    os.makedirs(dir_path, exist_ok=True)
+    download_file(url_target, dir_path, local_path)
 
-    local_path = f"{dir_path}/taxi_zone_lookup.csv"
-
-
-    with open(local_path, 'wb') as f:
-        shutil.copyfileobj(response, f)
     dbutils.jobs.taskValues.set(key="continue_downstream",value="yes")
     print("file successfully uploaded")
 
