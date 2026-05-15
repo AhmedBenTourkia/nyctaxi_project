@@ -1,11 +1,19 @@
 # Databricks notebook source
+import sys
+import os
+#Reach project root
+project_root = os.path.abspath(os.path.join(os.getcwd(), "../.."))
+
+if project_root not in sys.path:
+    sys.path.append(project_root)
+
 from pyspark.sql.functions import min, max, avg , sum, round, count
 from datetime import date
 from dateutil.relativedelta import relativedelta
-
+from modules.utils.date_utils import get_month_start_n_months_ago
 # COMMAND ----------
 
-two_months_ago = date.today().replace(day=1) - relativedelta(months=2)
+two_months_ago = get_month_start_n_months_ago(2)
 
 # COMMAND ----------
 
