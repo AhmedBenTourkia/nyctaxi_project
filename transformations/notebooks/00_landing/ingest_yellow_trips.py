@@ -1,20 +1,12 @@
-# Databricks notebook source
-import sys
-import os
-# Reach project root
-project_root= os.path.abspath(os.path.join(os.getcwd(), "../.."))
-
-if project_root not in sys.path:
-    sys.path.append(project_root)
-
 import urllib.request
+import os
 import shutil 
 from datetime import date, datetime, timezone
 from dateutil.relativedelta import relativedelta
-from modules.data_loader.file_downloader import download_file
-from modules.utils.date_utils import get_target_yyyymm
+
 # Obtains the year-month for 2 months prior to the current month in yyyy-MM format
-formatted_date = get_target_yyyymm(2)
+two_months_ago = date.today() - relativedelta(months=2)
+formatted_date = two_months_ago.strftime("%Y-%m")
 print(formatted_date)
 
 # Define the local directory for this date's data
@@ -35,8 +27,15 @@ except:
         # Construct the URL for the Parquet file corresponding to this month
         url = f"https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_{formatted_date}.parquet"
 
-        #Download the file
-        download_file(url, dir_path, local_path)
+        # Open a connection and stream the remote file
+        response = urllib.request.urlopen(url)
+
+        # Create the local directory for this date's data
+        os.makedirs(dir_path, exist_ok=True)
+
+        # Save the streamed content to the local file in binary mode
+        with open(local_path, 'wb') as f:
+            shutil.copyfileobj(response, f)  # Copy data from response to file
         
         # Set continue_downstream to yes if the file was loaded
         dbutils.jobs.taskValues.set(key="continue_downstream", value="yes")
