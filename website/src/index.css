@@ -1,0 +1,81 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  body {
+    background-color: #060d1a;
+    color: #e2e8f0;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #0a1628;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #1e3a5f;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #3b82f6;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    background: linear-gradient(135deg, #22d3ee 0%, #3b82f6 50%, #a855f7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .glow-blue {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3), 0 0 40px rgba(59, 130, 246, 0.1);
+  }
+
+  .glow-cyan {
+    box-shadow: 0 0 20px rgba(34, 211, 238, 0.3), 0 0 40px rgba(34, 211, 238, 0.1);
+  }
+
+  .card-dark {
+    background: rgba(13, 26, 46, 0.8);
+    border: 1px solid rgba(30, 58, 95, 0.6);
+    backdrop-filter: blur(8px);
+  }
+}
+
+/* SVG pipeline flow animation */
+.flow-line {
+  stroke-dasharray: 6 4;
+  animation: flow 1.4s linear infinite;
+}
+
+@keyframes flow {
+  from { stroke-dashoffset: 20; }
+  to   { stroke-dashoffset: 0; }
+}
+
+/* Glow pulse for active pipeline stage */
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 12px var(--stage-color), 0 0 24px var(--stage-color); }
+  50%       { box-shadow: 0 0 20px var(--stage-color), 0 0 40px var(--stage-color); }
+}
+
+.stage-active {
+  animation: glow-pulse 1.5s ease-in-out infinite;
+}
+
+/* Hero background grid */
+.hero-grid {
+  background-image:
+    linear-gradient(rgba(30, 58, 95, 0.3) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30, 58, 95, 0.3) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
