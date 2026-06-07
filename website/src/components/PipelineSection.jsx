@@ -134,16 +134,15 @@ export default function PipelineSection() {
           className="text-center mb-12"
         >
           <p className="text-cyan-400 font-mono text-sm font-medium mb-3 tracking-widest uppercase">
-            Architecture
+            How It Works
           </p>
-          <h2 className="text-4xl font-bold text-white mb-4">Databricks Job DAG</h2>
+          <h2 className="text-4xl font-bold text-white mb-4">From Raw Files to Insights</h2>
           <p className="text-slate-400 max-w-2xl mx-auto">
-            This is my real{' '}
-            <code className="text-cyan-400 font-mono text-sm px-1.5 py-0.5 bg-cyan-500/10 rounded">nyc_taxi_job</code>,
-            defined as a Databricks Asset Bundle and run on a schedule. It downloads the latest
-            monthly taxi files, skips work if they were already ingested, then cleans, joins zone
-            data, and aggregates daily metrics — writing Bronze, Silver, and Gold Delta tables
-            along the way. <span className="text-slate-300">Hover any task to see what it does.</span>
+            Each box below is an automated step in my pipeline, scheduled to run every month
+            on Databricks. It downloads the newest taxi trip data, skips anything it already has,
+            then cleans it up, joins it with location info, and rolls it into the daily summaries
+            and charts you can explore further down the page.{' '}
+            <span className="text-slate-300">Hover any step to see exactly what it does.</span>
           </p>
         </motion.div>
 
