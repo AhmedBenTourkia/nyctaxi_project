@@ -194,31 +194,33 @@ export default function AnalyticsDashboard() {
           >
             <h3 className="text-sm font-semibold text-slate-300 mb-1">Payment Type Distribution</h3>
             <p className="text-xs text-slate-500 mb-5 font-mono">silver.yellow_trips_cleansed · payment_type</p>
-            <div className="flex items-center gap-6">
-              <ResponsiveContainer width="50%" height={200}>
-                <PieChart>
-                  <Pie
-                    data={paymentTypes}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={55}
-                    outerRadius={85}
-                    dataKey="value"
-                    strokeWidth={0}
-                  >
-                    {paymentTypes.map((d, i) => (
-                      <Cell key={i} fill={d.color} fillOpacity={0.85} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    formatter={(v) => [`${v}%`, '']}
-                    contentStyle={{ background: '#0d1a2e', border: '1px solid #1e3a5f', borderRadius: 8, fontSize: 11 }}
-                    labelStyle={{ color: '#94a3b8' }}
-                    itemStyle={{ color: '#e2e8f0' }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="space-y-2">
+            <div className="flex flex-col sm:flex-row items-center gap-6">
+              <div className="w-full sm:w-1/2">
+                <ResponsiveContainer width="100%" height={200}>
+                  <PieChart>
+                    <Pie
+                      data={paymentTypes}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={55}
+                      outerRadius={85}
+                      dataKey="value"
+                      strokeWidth={0}
+                    >
+                      {paymentTypes.map((d, i) => (
+                        <Cell key={i} fill={d.color} fillOpacity={0.85} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      formatter={(v) => [`${v}%`, '']}
+                      contentStyle={{ background: '#0d1a2e', border: '1px solid #1e3a5f', borderRadius: 8, fontSize: 11 }}
+                      labelStyle={{ color: '#94a3b8' }}
+                      itemStyle={{ color: '#e2e8f0' }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="space-y-2 w-full sm:w-auto">
                 {paymentTypes.map(d => (
                   <div key={d.name} className="flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: d.color }} />

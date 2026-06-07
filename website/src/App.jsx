@@ -1,7 +1,6 @@
 import Nav from './components/Nav'
 import Hero from './components/Hero'
 import PipelineSection from './components/PipelineSection'
-import UploadSection from './components/UploadSection'
 import AnalyticsDashboard from './components/AnalyticsDashboard'
 import CodeViewer from './components/CodeViewer'
 import TechStack from './components/TechStack'
@@ -13,7 +12,6 @@ export default function App() {
       <Nav />
       <Hero />
       <PipelineSection />
-      <UploadSection />
       <AnalyticsDashboard />
       <CodeViewer />
       <TechStack />

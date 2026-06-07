@@ -103,11 +103,13 @@ export default function Hero() {
             Explore the Pipeline
           </a>
           <a
-            href="#upload"
+            href="https://github.com/AhmedBenTourkia/nyctaxi_project"
+            target="_blank"
+            rel="noopener noreferrer"
             className="px-8 py-3.5 border border-[#1e3a5f] hover:border-cyan-500/50 text-slate-300 hover:text-white font-semibold rounded-full transition-all duration-200 flex items-center justify-center gap-2 card-dark"
           >
             <ExternalLink size={16} />
-            Try It Live
+            View on GitHub
           </a>
         </motion.div>
 

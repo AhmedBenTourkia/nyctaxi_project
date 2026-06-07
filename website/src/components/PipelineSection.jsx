@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Play, RotateCcw, CheckCircle2, BookOpen, GitBranch, Loader2 } from 'lucide-react'
+import { BookOpen, GitBranch } from 'lucide-react'
 
 const LS = {
   landing:   { color: '#3b82f6', bg: 'rgba(59,130,246,0.13)',  border: 'rgba(59,130,246,0.55)',  label: 'Landing'   },
@@ -78,17 +78,6 @@ const EDGES = [
   { from: 'enriched',      to: 'export'      },
 ]
 
-// Execution order follows real Databricks job parallelism.
-// Durations are paced so each task's tooltip stays readable while it runs.
-const BATCHES = [
-  { ids: ['ingest_lookup', 'ingest_trips'], ms: 4500 },
-  { ids: ['cond_lookup',   'cond_trips'],   ms: 3500 },
-  { ids: ['zone_lookup',   'raw'],          ms: 4500 },
-  { ids: ['cleansed'],                      ms: 4500 },
-  { ids: ['enriched'],                      ms: 5000 },
-  { ids: ['summary',       'export'],       ms: 4500 },
-]
-
 // Vertical offset where edges meet a node (smaller for compact gate diamonds)
 const offsetFor = id => (nodeMap[id].type === 'condition' ? 3.4 : 4.8)
 
@@ -100,7 +89,7 @@ const getPath = (f, t) => {
   return `M ${x1} ${y1} C ${x1} ${my} ${x2} ${my} ${x2} ${y2}`
 }
 
-// Tooltip shown on hover or while a node is running
+// Tooltip shown on hover
 function NodeTooltip({ node, color, placement }) {
   const pos =
     placement === 'above'
@@ -130,29 +119,7 @@ function NodeTooltip({ node, color, placement }) {
 }
 
 export default function PipelineSection() {
-  const [activeSet, setActiveSet] = useState(new Set())
-  const [doneSet,   setDoneSet]   = useState(new Set())
-  const [running,   setRunning]   = useState(false)
   const [hoveredId, setHoveredId] = useState(null)
-
-  const runAnimation = async () => {
-    setRunning(true)
-    setActiveSet(new Set())
-    setDoneSet(new Set())
-    for (const batch of BATCHES) {
-      setActiveSet(new Set(batch.ids))
-      await new Promise(r => setTimeout(r, batch.ms))
-      setDoneSet(prev => new Set([...prev, ...batch.ids]))
-      setActiveSet(new Set())
-    }
-    setRunning(false)
-  }
-
-  const reset = () => {
-    setRunning(false)
-    setActiveSet(new Set())
-    setDoneSet(new Set())
-  }
 
   return (
     <section id="pipeline" className="py-24 px-6">
@@ -176,26 +143,9 @@ export default function PipelineSection() {
             defined as a Databricks Asset Bundle and run on a schedule. It downloads the latest
             monthly taxi files, skips work if they were already ingested, then cleans, joins zone
             data, and aggregates daily metrics — writing Bronze, Silver, and Gold Delta tables
-            along the way. <span className="text-slate-300">Hover any task to see what it does, or
-            hit run to watch the job execute step by step.</span>
+            along the way. <span className="text-slate-300">Hover any task to see what it does.</span>
           </p>
         </motion.div>
-
-        {/* Controls */}
-        <div className="flex justify-center gap-3 mb-10">
-          <button
-            onClick={running ? reset : runAnimation}
-            className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-semibold text-sm transition-all duration-200 ${
-              running
-                ? 'bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20'
-                : 'bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20'
-            }`}
-          >
-            {running
-              ? <><RotateCcw size={14} /> Reset</>
-              : <><Play size={14} /> Run Job Animation</>}
-          </button>
-        </div>
 
         {/* DAG — Desktop */}
         <motion.div
@@ -246,13 +196,12 @@ export default function PipelineSection() {
               {EDGES.map(edge => {
                 const f = nodeMap[edge.from]
                 const t = nodeMap[edge.to]
-                const isDone   = doneSet.has(edge.from) && doneSet.has(edge.to)
-                const isActive = doneSet.has(edge.from) && (activeSet.has(edge.to) || doneSet.has(edge.to))
-                const color    = isDone || isActive ? '#22d3ee' : '#1e3a5f'
-                const opacity  = isDone || isActive ? 0.95 : 0.3
+                const isHighlighted = hoveredId === edge.from || hoveredId === edge.to
+                const color   = isHighlighted ? '#22d3ee' : '#1e3a5f'
+                const opacity = isHighlighted ? 0.95 : 0.3
 
                 return (
-                  <g key={`${edge.from}-${edge.to}`} filter={isActive ? 'url(#glow)' : undefined}>
+                  <g key={`${edge.from}-${edge.to}`} filter={isHighlighted ? 'url(#glow)' : undefined}>
                     <path
                       d={getPath(f, t)}
                       fill="none"
@@ -260,7 +209,6 @@ export default function PipelineSection() {
                       strokeWidth="0.45"
                       strokeDasharray="2.2 1.6"
                       opacity={opacity}
-                      className={isActive && !isDone ? 'flow-line' : ''}
                     />
                     <circle
                       cx={t.cx}
@@ -277,10 +225,8 @@ export default function PipelineSection() {
             {/* Nodes */}
             {NODES.map(node => {
               const ls        = LS[node.layer]
-              const isActive  = activeSet.has(node.id)
-              const isDone    = doneSet.has(node.id)
+              const isHovered = hoveredId === node.id
               const isCond    = node.type === 'condition'
-              const showTip   = hoveredId === node.id || isActive
               const placement = node.cy > 70 ? 'above' : 'below'
 
               return (
@@ -292,7 +238,7 @@ export default function PipelineSection() {
                     top:  `${node.cy}%`,
                     transform: 'translate(-50%, -50%)',
                     width: isCond ? 44 : 165,
-                    zIndex: showTip ? 25 : 10,
+                    zIndex: isHovered ? 25 : 10,
                   }}
                   onMouseEnter={() => setHoveredId(node.id)}
                   onMouseLeave={() => setHoveredId(null)}
@@ -304,26 +250,18 @@ export default function PipelineSection() {
                         className="absolute w-9 h-9 rounded-md border transition-all duration-300"
                         style={{
                           transform: 'rotate(45deg)',
-                          background: isActive || isDone ? ls.bg : 'rgba(6,13,26,0.95)',
-                          borderColor: isActive ? ls.border : isDone ? ls.color + '66' : '#1e3a5f80',
-                          boxShadow: isActive
+                          background: isHovered ? ls.bg : 'rgba(6,13,26,0.95)',
+                          borderColor: isHovered ? ls.border : '#1e3a5f80',
+                          boxShadow: isHovered
                             ? `0 0 16px ${ls.color}66, 0 0 30px ${ls.color}33`
-                            : isDone
-                            ? `0 0 8px ${ls.color}33`
                             : 'none',
                         }}
                       />
                       <div className="relative flex items-center justify-center">
-                        {isDone ? (
-                          <CheckCircle2 size={14} style={{ color: ls.color }} />
-                        ) : isActive ? (
-                          <Loader2 size={14} className="animate-spin" style={{ color: ls.color }} />
-                        ) : (
-                          <GitBranch
-                            size={13}
-                            style={{ color: isActive || isDone ? ls.color : '#475569' }}
-                          />
-                        )}
+                        <GitBranch
+                          size={13}
+                          style={{ color: isHovered ? ls.color : '#475569' }}
+                        />
                       </div>
                     </div>
                   ) : (
@@ -331,43 +269,34 @@ export default function PipelineSection() {
                     <div
                       className="rounded-xl px-3 py-2.5 border transition-all duration-300 cursor-default"
                       style={{
-                        background: isActive || isDone ? ls.bg : 'rgba(6,13,26,0.95)',
-                        borderColor: isActive ? ls.border : isDone ? ls.color + '55' : '#1e3a5f60',
-                        boxShadow: isActive
+                        background: isHovered ? ls.bg : 'rgba(6,13,26,0.95)',
+                        borderColor: isHovered ? ls.border : '#1e3a5f60',
+                        boxShadow: isHovered
                           ? `0 0 16px ${ls.color}55, 0 0 32px ${ls.color}22`
-                          : isDone
-                          ? `0 0 8px ${ls.color}25`
                           : 'none',
                       }}
                     >
-                      <div className="flex items-center justify-between mb-1.5">
-                        <div className="flex items-center gap-1.5">
-                          <BookOpen size={10} style={{ color: isActive || isDone ? ls.color : '#334155' }} />
-                          <span
-                            className="text-[9px] font-mono uppercase tracking-wider font-semibold"
-                            style={{ color: isActive || isDone ? ls.color : '#334155' }}
-                          >
-                            {ls.label}
-                          </span>
-                        </div>
-                        {isDone ? (
-                          <CheckCircle2 size={11} style={{ color: ls.color }} />
-                        ) : isActive ? (
-                          <Loader2 size={11} className="animate-spin" style={{ color: ls.color }} />
-                        ) : null}
+                      <div className="flex items-center gap-1.5 mb-1.5">
+                        <BookOpen size={10} style={{ color: isHovered ? ls.color : '#334155' }} />
+                        <span
+                          className="text-[9px] font-mono uppercase tracking-wider font-semibold"
+                          style={{ color: isHovered ? ls.color : '#334155' }}
+                        >
+                          {ls.label}
+                        </span>
                       </div>
                       <p
                         className="text-[10px] font-mono font-medium leading-tight"
-                        style={{ color: isActive || isDone ? '#e2e8f0' : '#475569' }}
+                        style={{ color: isHovered ? '#e2e8f0' : '#475569' }}
                       >
                         {node.short}
                       </p>
                     </div>
                   )}
 
-                  {/* Tooltip — on hover or while running */}
+                  {/* Tooltip — on hover */}
                   <AnimatePresence>
-                    {showTip && (
+                    {isHovered && (
                       <NodeTooltip node={node} color={ls.color} placement={placement} />
                     )}
                   </AnimatePresence>
@@ -380,17 +309,15 @@ export default function PipelineSection() {
         {/* DAG — Mobile vertical fallback */}
         <div className="md:hidden space-y-2">
           {NODES.map(node => {
-            const ls       = LS[node.layer]
-            const isActive = activeSet.has(node.id)
-            const isDone   = doneSet.has(node.id)
-            const isCond   = node.type === 'condition'
+            const ls     = LS[node.layer]
+            const isCond = node.type === 'condition'
             return (
               <div
                 key={node.id}
-                className="px-4 py-3 rounded-xl border transition-all duration-300"
+                className="px-4 py-3 rounded-xl border"
                 style={{
-                  borderColor: isActive ? ls.border : isDone ? ls.color + '40' : '#1e3a5f50',
-                  background: isActive ? ls.bg : 'rgba(10,22,40,0.8)',
+                  borderColor: '#1e3a5f50',
+                  background: 'rgba(10,22,40,0.8)',
                 }}
               >
                 <div className="flex items-center gap-3">
@@ -398,12 +325,8 @@ export default function PipelineSection() {
                     ? <GitBranch size={12} className="flex-shrink-0" style={{ color: ls.color }} />
                     : <span className="text-[9px] font-mono font-bold uppercase w-14 flex-shrink-0" style={{ color: ls.color }}>{ls.label}</span>}
                   <span className="text-xs font-mono text-slate-300 flex-1">{node.full}</span>
-                  {isDone && <CheckCircle2 size={12} style={{ color: ls.color }} />}
-                  {isActive && <Loader2 size={12} className="animate-spin" style={{ color: ls.color }} />}
                 </div>
-                {(isActive || isDone) && (
-                  <p className="text-[11px] leading-snug text-slate-400 mt-2 pl-0">{node.desc}</p>
-                )}
+                <p className="text-[11px] leading-snug text-slate-400 mt-2">{node.desc}</p>
               </div>
             )
           })}

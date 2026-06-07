@@ -3,7 +3,6 @@ import { Github, Linkedin, Menu, X } from 'lucide-react'
 
 const links = [
   { label: 'Pipeline',  href: '#pipeline'  },
-  { label: 'Try It',    href: '#upload'    },
   { label: 'Analytics', href: '#analytics' },
   { label: 'Code',      href: '#code'      },
   { label: 'Stack',     href: '#stack'     },
@@ -68,12 +67,6 @@ export default function Nav() {
             <Linkedin size={16} />
             LinkedIn
           </a>
-          <a
-            href="#upload"
-            className="ml-2 px-4 py-1.5 bg-cyan-500 hover:bg-cyan-400 text-black font-semibold text-sm rounded-full transition-colors"
-          >
-            Try It Live
-          </a>
         </div>
 
         {/* Mobile hamburger */}
@@ -98,13 +91,6 @@ export default function Nav() {
               {l.label}
             </a>
           ))}
-          <a
-            href="#upload"
-            onClick={() => setMobileOpen(false)}
-            className="mt-2 px-4 py-2 bg-cyan-500 text-black font-semibold rounded-full text-center"
-          >
-            Try It Live
-          </a>
         </div>
       )}
     </nav>
